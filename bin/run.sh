@@ -1,3 +1,3 @@
 #!/bin/sh
 
-java -jar ./run.jar $@
+java -jar "$(dirname $0)/run.jar" $@
