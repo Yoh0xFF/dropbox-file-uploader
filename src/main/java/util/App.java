@@ -11,7 +11,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDate;
 import java.util.Properties;
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -42,16 +44,39 @@ public class App {
         DbxRequestConfig dbcRequestConfig = new DbxRequestConfig(dbxClientName, "en_US");
         DbxClientV2 dbxClient = new DbxClientV2(dbcRequestConfig, dbxAccessToken);
         DbxUserFilesRequests dbxFileMngr = dbxClient.files();
+
+        // create folder in dropbox
+        LocalDate curDate = LocalDate.now();
+        String curYear = "" + curDate.getYear();
+        String curMonth = StringUtils.leftPad("" + curDate.getMonthValue(), 2, "0");
+        String dbxFolder = "/" + curYear + "/" + curMonth;
         
+        boolean folderExists = true;
+        try {
+            dbxFileMngr.getMetadata(dbxFolder);
+        } catch (DbxException ex) {
+            folderExists = false;
+        }
+
+        if (!folderExists) {
+            try {
+                dbxFileMngr.createFolder(dbxFolder);
+            } catch (DbxException ex) {
+                LOGGER.error("Folder creation failed", ex);
+                return;
+            }
+        }
+
+        // Upload files to Dropbox
         for (String filePath : args) {
             LOGGER.info("Start file upload: {}", filePath);
-
-            // Upload file to Dropbox
+            
             File file = new File(filePath);
+            String dbxFilePath = dbxFolder + "/" + file.getName();
             try {
                 if (file.length() <= BUFFER_SIZE) {
                     try (InputStream in = new FileInputStream(file)) {
-                        dbxFileMngr.uploadBuilder("/" + file.getName()).uploadAndFinish(in);
+                        dbxFileMngr.uploadBuilder(dbxFilePath).uploadAndFinish(in);
                     }
                 } else {
                     byte[] buffer = new byte[BUFFER_SIZE];
@@ -72,7 +97,7 @@ public class App {
                                     firstRead = false;
                                 } else if (lastRead) {
                                     UploadSessionCursor cursor = new UploadSessionCursor(sessionId, offset);
-                                    CommitInfo commitInfo = new CommitInfo("/" + file.getName());
+                                    CommitInfo commitInfo = new CommitInfo(dbxFilePath);
                                     dbxFileMngr.uploadSessionFinish(cursor, commitInfo).uploadAndFinish(bis);
                                 } else {
                                     dbxFileMngr.uploadSessionAppend(sessionId, offset).uploadAndFinish(bis);
