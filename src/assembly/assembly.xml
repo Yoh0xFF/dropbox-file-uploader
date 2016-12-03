@@ -14,8 +14,8 @@
     
     <files>
         <file>
-            <outputDirectory>/</outputDirectory>
-            <source>bin/run.sh</source>
+            <outputDirectory>.</outputDirectory>
+            <source>src/assembly/run.sh</source>
             <fileMode>755</fileMode>
         </file>
     </files>
