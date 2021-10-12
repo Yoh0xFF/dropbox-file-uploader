@@ -2,3 +2,8 @@
 **/logs/
 **/.idea/
 **/*.iml
+**/.project
+**/.settings
+**/.DS_Store
+**/.factorypath
+**/.classpath
