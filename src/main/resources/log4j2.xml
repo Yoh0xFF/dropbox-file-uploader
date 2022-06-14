@@ -7,9 +7,7 @@
   </Properties>
 
   <Appenders>
-    <RollingFile name="fileAppender"
-                 fileName="logs/${logFileName}.log"
-                 filePattern="logs/${logFileName}-%d{yyyy-MM-dd}.log">
+    <RollingFile name="fileAppender" fileName="logs/${logFileName}.log" filePattern="logs/${logFileName}-%d{yyyy-MM-dd}.log">
       <PatternLayout>
         <pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss} [%t] %C - %msg%n</pattern>
       </PatternLayout>
